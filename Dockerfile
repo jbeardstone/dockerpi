@@ -96,3 +96,12 @@ ARG FILESYSTEM_IMAGE_CHECKSUM="12ae6e17bf95b6ba83beca61e7394e7411b45eba7e6a520f4
 ADD $FILESYSTEM_IMAGE_URL /filesystem.zip
 
 RUN echo "$FILESYSTEM_IMAGE_CHECKSUM  /filesystem.zip" | sha256sum -c
+
+# Installation mirroir
+# FROM dockerpi as dockerpi-mirror
+# LABEL maintainer="Alkx Team <alix@jbeardst.one>"
+
+ADD ./mirroir.sh /mirroir.sh
+
+ENTRYPOINT ["./mirroir.sh"]
+

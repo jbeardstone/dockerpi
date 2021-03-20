@@ -36,7 +36,8 @@ elif [ "${target}" = "pi3" ]; then
 
   echo "Rounding image size up to a multiple of 2G"
   image_size=`du -m $image_path | cut -f1`
-  new_size=$(( ( ( image_size / 2048 ) + 1 ) * 2 ))
+  # new_size=$(( ( ( image_size / 2048 ) + 1 ) * 2 ))
+  new_size=$(( ( ( image_size / 1024 ) + 1 ) * 2 ))
   echo "from ${image_size}M to ${new_size}G"
   qemu-img resize $image_path "${new_size}G"
 
