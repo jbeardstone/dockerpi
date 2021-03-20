@@ -21,7 +21,8 @@ if [ "${target}" = "pi1" ]; then
   dtb="/root/qemu-rpi-kernel/versatile-pb.dtb"
   machine=versatilepb
   memory=256m
-  root=/dev/sda2
+  root=/dev/sda
+  extra=''
   nic='--net nic --net user,hostfwd=tcp::5022-:22'
 elif [ "${target}" = "pi2" ]; then
   emulator=qemu-system-arm
@@ -29,14 +30,23 @@ elif [ "${target}" = "pi2" ]; then
   memory=1024m
   kernel_pattern=kernel7.img
   dtb_pattern=bcm2709-rpi-2-b.dtb
-  nic=''
+  extra='dwc_otg.fiq_fsm_enable=0'
+  nic='-netdev user,id=net0,hostfwd=tcp::5022-:22 -device usb-net,netdev=net0'
 elif [ "${target}" = "pi3" ]; then
+
+  echo "Rounding image size up to a multiple of 2G"
+  image_size=`du -m $image_path | cut -f1`
+  new_size=$(( ( ( image_size / 2048 ) + 1 ) * 2 ))
+  echo "from ${image_size}M to ${new_size}G"
+  qemu-img resize $image_path "${new_size}G"
+
   emulator=qemu-system-aarch64
   machine=raspi3
   memory=1024m
   kernel_pattern=kernel8.img
   dtb_pattern=bcm2710-rpi-3-b-plus.dtb
-  nic=''
+  extra='dwc_otg.fiq_fsm_enable=0'
+  nic='-netdev user,id=net0,hostfwd=tcp::5022-:22 -device usb-net,netdev=net0'
 else
   echo "Target ${target} not supported"
   echo "Supported targets: pi1 pi2 pi3"
@@ -78,7 +88,7 @@ exec ${emulator} \
   ${nic} \
   --dtb "${dtb}" \
   --kernel "${kernel}" \
-  --append "rw earlyprintk loglevel=8 console=ttyAMA0,115200 dwc_otg.lpm_enable=0 root=${root} rootwait panic=1" \
+  --append "rw earlyprintk loglevel=8 console=ttyAMA0,115200 dwc_otg.lpm_enable=0 root=${root} rootwait panic=1 ${extra}" \
   --no-reboot \
   --display none \
   --serial mon:stdio
